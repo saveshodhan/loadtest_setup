@@ -1,0 +1,64 @@
+version: '3'
+
+services:
+
+  locust_runner:
+    image: locustio/locust
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./locustfile.py:/mnt/locust/locustfile.py
+    command: -f /mnt/locust/locustfile.py
+
+
+  locust_exporter:
+    image: containersol/locust_exporter
+    ports:
+        - "9646:9646"
+    network_mode: "host"
+
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+     - ./prometheus/loadtest.yaml:/etc/loadtest.yaml
+    command: --config.file /etc/loadtest.yaml
+    ports:
+      - "9090:9090"
+    network_mode: "host"
+
+
+  grafana:
+    image: grafana/grafana
+    volumes:
+      - ./grafana/dashboard.json:/var/lib/grafana/dashboards/lt_dashboard.json
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    #environment:
+    #    GF_RENDERING_SERVER_URL: http://localhost:8081/render
+    #    GF_RENDERING_CALLBACK_URL: http://localhost:3000/
+    #    GF_LOG_FILTERS: rendering:debug
+    #    GF_USERS_ALLOW_SIGN_UP: "false"
+    #    GF_AUTH_DISABLE_LOGIN_FORM: "true"
+    #    GF_AUTH_DISABLE_SIGNOUT_MENU: "true"
+    #    GF_AUTH_ANONYMOUS_ENABLED: "true"
+    #    GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
+    ports:
+        - "3000:3000"
+    network_mode: "host"
+
+
+  #grafana_image_renderer:
+  #  image: grafana/grafana-image-renderer
+  #  environment:
+  #      ENABLE_METRICS: 'true'
+  #      IGNORE_HTTPS_ERRORS: 'true'
+  #  ports:
+  #      - "8081:8081"
+  #  network_mode: "host"
+
+
+  #grafana_reporter:
+  #  image: izakmarais/grafana-reporter
+  #  ports:
+  #      - "8086:8086"
+  #  network_mode: "host"
